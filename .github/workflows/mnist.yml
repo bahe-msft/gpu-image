@@ -20,25 +20,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      # - name: Set up Docker
-      #   uses: crazy-max/ghaction-setup-docker@v3
-      #   with:
-      #     daemon-config: |
-      #       {
-      #       "debug": true,
-      #       "experimental": true,
-      #           "features": {
-      #           "containerd-snapshotter": true
-      #           }
-      #       }
-
-      # - name: Get socket path
-      #   run: |
-      #     url=$(docker context inspect | jq -r .[0].Endpoints.docker.Host)
-      #     socket_path=$(echo "$url" | awk -F// '{print $2}')
-      #     echo "$socket_path"
-      #     echo "SOCKET=$socket_path" >> $GITHUB_ENV
-
       - name: Login to GHCR
         id: login
         uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
@@ -47,12 +28,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: Build and push Docker image
-      #   uses: docker/build-push-action@v2
-      #   with:
-      #     context: ./mnist
-      #     push: true
-      #     tags: ghcr.io/bahe-msft/gpu-image/mnist:gpu
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./mnist
+          push: true
+          tags: ghcr.io/bahe-msft/gpu-image/mnist:gpu
 
       - name: Generate Trivy Report
         uses: aquasecurity/trivy-action@0.20.0
@@ -66,10 +47,6 @@ jobs:
 
       - name: Run Copa action
         id: copa
-        # using main for testing purposes
-        # use a tag (such as v1 or v1.0.1) at a bare minimum
-        # recommendation is to pin to a digest for security and stability
-        # and rely on dependabot for digest/version updates
         uses: project-copacetic/copa-action@main
         with:
           image: ghcr.io/bahe-msft/gpu-image/mnist:gpu
