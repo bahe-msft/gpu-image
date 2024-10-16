@@ -55,7 +55,7 @@ jobs:
           tags: ghcr.io/bahe-msft/gpu-image/mnist:gpu
 
       - name: Generate Trivy Report
-        uses: aquasecurity/trivy-action@d43c1f16c00cfd3978dde6c07f4bbcf9eb6993ca # 0.16.1
+        uses: aquasecurity/trivy-action@0.20.0
         with:
           scan-type: "image"
           format: "json"
@@ -65,6 +65,7 @@ jobs:
           image-ref: ghcr.io/bahe-msft/gpu-image/mnist:gpu
 
       - name: Run Copa action
+        id: copa
         # using main for testing purposes
         # use a tag (such as v1 or v1.0.1) at a bare minimum
         # recommendation is to pin to a digest for security and stability
@@ -73,7 +74,7 @@ jobs:
         with:
           image: ghcr.io/bahe-msft/gpu-image/mnist:gpu
           image-report: "report.json"
-          patched-tag: "patched"
+          patched-tag: "gpu-patched"
           timeout: "5m" # optional, default is 5m
           output: vex.json # optional
           format: "openvex" # optional, default is openvex
