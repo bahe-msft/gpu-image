@@ -1,0 +1,79 @@
+name: Build Docker Image
+
+on:
+  push:
+    paths:
+      - "mnist/**"
+  workflow_dispatch:
+
+jobs:
+  build:
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Set up Docker
+        uses: crazy-max/ghaction-setup-docker@v3
+        with:
+          daemon-config: |
+            {
+            "debug": true,
+            "experimental": true,
+                "features": {
+                "containerd-snapshotter": true
+                }
+            }
+
+      - name: Get socket path
+        run: |
+          url=$(docker context inspect | jq -r .[0].Endpoints.docker.Host)
+          socket_path=$(echo "$url" | awk -F// '{print $2}')
+          echo "$socket_path"
+          echo "SOCKET=$socket_path" >> $GITHUB_ENV
+
+      - name: Login to GHCR
+        id: login
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./mnist
+          push: true
+          tags: ghcr.io/bahe-microsoft/gpu-image/mnist:gpu
+
+      - name: Run Copa action
+        # using main for testing purposes
+        # use a tag (such as v1 or v1.0.1) at a bare minimum
+        # recommendation is to pin to a digest for security and stability
+        # and rely on dependabot for digest/version updates
+        uses: project-copacetic/copa-action@main
+        with:
+          image: ${{ matrix.images }}
+          image-report: "report.json"
+          patched-tag: "patched"
+          timeout: "5m" # optional, default is 5m
+          output: vex.json # optional
+          format: "openvex" # optional, default is openvex
+          # copa-version: "0.6.0" # optional, default is latest
+          # buildkit-version: "v0.12.4" # optional, default is latest
+          # custom-socket: "/var/run/buildkit/buildkitd.sock" # optional, used for custom socket address
+
+      - name: Push patched image
+        if: steps.login.conclusion == 'success'
+        run: |
+          # retag if needed
+          docker tag ${{ steps.copa.outputs.patched-image }} ghcr.io/bahe-microsoft/gpu-image/mnist/${{ steps.copa.outputs.patched-image }}
+          docker push ghcr.io/bahe-microsoft/gpu-image/mnist/${{ steps.copa.outputs.patched-image }}
