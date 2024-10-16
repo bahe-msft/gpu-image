@@ -20,24 +20,24 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      - name: Set up Docker
-        uses: crazy-max/ghaction-setup-docker@v3
-        with:
-          daemon-config: |
-            {
-            "debug": true,
-            "experimental": true,
-                "features": {
-                "containerd-snapshotter": true
-                }
-            }
+      # - name: Set up Docker
+      #   uses: crazy-max/ghaction-setup-docker@v3
+      #   with:
+      #     daemon-config: |
+      #       {
+      #       "debug": true,
+      #       "experimental": true,
+      #           "features": {
+      #           "containerd-snapshotter": true
+      #           }
+      #       }
 
-      - name: Get socket path
-        run: |
-          url=$(docker context inspect | jq -r .[0].Endpoints.docker.Host)
-          socket_path=$(echo "$url" | awk -F// '{print $2}')
-          echo "$socket_path"
-          echo "SOCKET=$socket_path" >> $GITHUB_ENV
+      # - name: Get socket path
+      #   run: |
+      #     url=$(docker context inspect | jq -r .[0].Endpoints.docker.Host)
+      #     socket_path=$(echo "$url" | awk -F// '{print $2}')
+      #     echo "$socket_path"
+      #     echo "SOCKET=$socket_path" >> $GITHUB_ENV
 
       - name: Login to GHCR
         id: login
