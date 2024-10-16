@@ -85,6 +85,4 @@ jobs:
       - name: Push patched image
         if: steps.login.conclusion == 'success'
         run: |
-          # retag if needed
-          docker tag ${{ steps.copa.outputs.patched-image }} ghcr.io/bahe-msft/gpu-image/mnist/${{ steps.copa.outputs.patched-image }}
-          docker push ghcr.io/bahe-msft/gpu-image/mnist/${{ steps.copa.outputs.patched-image }}
+          docker push ${{ steps.copa.outputs.patched-image }}
