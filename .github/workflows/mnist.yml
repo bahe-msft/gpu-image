@@ -54,6 +54,16 @@ jobs:
           push: true
           tags: ghcr.io/bahe-msft/gpu-image/mnist:gpu
 
+      - name: Generate Trivy Report
+        uses: aquasecurity/trivy-action@d43c1f16c00cfd3978dde6c07f4bbcf9eb6993ca # 0.16.1
+        with:
+          scan-type: "image"
+          format: "json"
+          output: "report.json"
+          ignore-unfixed: true
+          vuln-type: "os"
+          image-ref: ghcr.io/bahe-msft/gpu-image/mnist:gpu
+
       - name: Run Copa action
         # using main for testing purposes
         # use a tag (such as v1 or v1.0.1) at a bare minimum
