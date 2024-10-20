@@ -30,7 +30,7 @@ jobs:
 
       - name: Generate date based tag
         id: tag
-        run: echo "::set-output name=tag::$(date +'%Y%m%d%H%M')"
+        run: echo "tag=$(date +'%Y%m%d%H%M')" > $GITHUB_OUTPUT
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
@@ -53,7 +53,7 @@ jobs:
         id: copa
         uses: project-copacetic/copa-action@main
         with:
-          image: ghcr.io/bahe-msft/gpu-image/mnist:gpu
+          image: ghcr.io/bahe-msft/gpu-image/mnist:${{ steps.tag.outputs.tag }}
           image-report: "report.json"
           patched-tag: "${{ steps.tag.outputs.tag }}-patched"
           timeout: "5m" # optional, default is 5m
