@@ -63,6 +63,18 @@ jobs:
           # buildkit-version: "v0.12.4" # optional, default is latest
           # custom-socket: "/var/run/buildkit/buildkitd.sock" # optional, used for custom socket address
 
+      - name: Push patched image
+        if: steps.login.conclusion == 'success'
+        run: |
+          docker images
+          docker push ${{ steps.copa.outputs.patched-image }}
+
+      - name: Free disk space
+        run: |
+          docker system prune -f
+          cd /opt
+          find . -maxdepth 1 -mindepth 1 '!' -path ./containerd '!' -path ./actionarchivecache '!' -path ./runner '!' -path ./runner-cache -exec rm -rf '{}' ';'
+
       - name: Scan patched image with Trivy
         uses: aquasecurity/trivy-action@0.20.0
         with:
@@ -71,9 +83,3 @@ jobs:
           output: "patched-report.json"
           ignore-unfixed: true
           image-ref: ${{ steps.copa.outputs.patched-image }}
-
-      - name: Push patched image
-        if: steps.login.conclusion == 'success'
-        run: |
-          docker images
-          docker push ${{ steps.copa.outputs.patched-image }}
