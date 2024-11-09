@@ -63,6 +63,15 @@ jobs:
           # buildkit-version: "v0.12.4" # optional, default is latest
           # custom-socket: "/var/run/buildkit/buildkitd.sock" # optional, used for custom socket address
 
+      - name: Scan patched image with Trivy
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          scan-type: "image"
+          format: "json"
+          output: "patched-report.json"
+          ignore-unfixed: true
+          image-ref: ${{ steps.copa.outputs.patched-image }}
+
       - name: Push patched image
         if: steps.login.conclusion == 'success'
         run: |
